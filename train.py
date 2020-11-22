@@ -4,10 +4,9 @@ import torch.nn as nn
 
 from torch.utils.data import DataLoader
 from utils.data_preprocessing import EyeLandmarksDataset, TrainDataset, TestDataset
-from model.hourglass import make_hourglass
+from model.hourglass import make_hourglass, Bottleneck
 from utils.data_augmentation import get_landmarks_from_heatmap
 from utils import metrics
-
 
 def validation_model(model, dataloader):
     for image, head_map in dataloader:
@@ -42,13 +41,14 @@ if __name__ == '__main__':
     train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
     test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS)
 
-    model = make_hourglass(num_stacks=3, num_blocks=4, num_classes=17)
-
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    # model = make_hourglass(num_stacks=3, num_blocks=2, num_classes=17)
+    model = Bottleneck(3, 16)
+    # criterion = nn.CrossEntropyLoss()
+    # optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
     for epoch in range(EPOCH_SIZE):
         for image, heat_map in train_dataloader:
-            print(image.shape)
-
-            # if torch.cuda.is_available():
+            with torch.no_grad():
+                print(image.shape)
+                print(model.forward(image).shape)
+                # if torch.cuda.is_available():

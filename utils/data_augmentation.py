@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from utils import multivariate_gaussian
+from utils.tools import multivariate_gaussian
 
 
 def shift(data, max_shift=(5, 7), difficult=1.0):
@@ -51,7 +51,6 @@ def random_blur(data, sigma=1.0, difficult=1.0):
 
 
 def down_up_scale(data, scale=0.4, difficult=1.0):
-
     if "image" in data:
         up_shape = np.array(data["image"].shape)[[1, 0]]
         scale = 1.0 - (1.0 - scale) * difficult
@@ -77,7 +76,7 @@ def add_line(data, count=1, difficult=1.0):
 def make_map(data, sigma=1.0, size=(120, 72), difficult=1.0):
     difficult = (difficult - 0.5) * 0.9 + 0.5
 
-    sigma = sigma * (1.0 - (1.0 - (1.0-difficult) ** 2.0) ** 0.5)
+    sigma = sigma * (1.0 - (1.0 - (1.0 - difficult) ** 2.0) ** 0.5)
     heat_map = []
     for point in data["landmarks"]:
         X = np.arange(size[0]).astype(np.float32)
@@ -110,3 +109,41 @@ def resize(data, size=(120, 72)):
 
         if "landmarks" in data:
             data["landmarks"] = data["landmarks"] * d_shape
+
+
+def data_normalizarion(data):
+    if "image" in data:
+        data["image"] = 2.0 * data["image"] / 256.0 - 1.0
+
+
+def get_landmarks_from_heatmap(head_map):
+    return np.array([np.unravel_index(np.argmax(map), map.shape) for map in head_map])[:, [1, 0]].astype(np.float32)
+
+def get_max_preds(batch_heatmaps):
+    '''
+    get predictions from score maps
+    heatmaps: numpy.ndarray([batch_size, num_joints, height, width])
+    '''
+    assert isinstance(batch_heatmaps, np.ndarray), 'batch_heatmaps should be numpy.ndarray'
+    assert batch_heatmaps.ndim == 4, 'batch_images should be 4-ndim'
+
+    batch_size = batch_heatmaps.shape[0]
+    num_joints = batch_heatmaps.shape[1]
+    width = batch_heatmaps.shape[3]
+    heatmaps_reshaped = batch_heatmaps.reshape((batch_size, num_joints, -1))
+    idx = np.argmax(heatmaps_reshaped, 2)
+    maxvals = np.amax(heatmaps_reshaped, 2)
+
+    maxvals = maxvals.reshape((batch_size, num_joints, 1))
+    idx = idx.reshape((batch_size, num_joints, 1))
+
+    preds = np.tile(idx, (1, 1, 2)).astype(np.float32)
+
+    preds[:, :, 0] = (preds[:, :, 0]) % width
+    preds[:, :, 1] = np.floor((preds[:, :, 1]) / width)
+
+    pred_mask = np.tile(np.greater(maxvals, 0.0), (1, 1, 2))
+    pred_mask = pred_mask.astype(np.float32)
+
+    preds *= pred_mask
+    return preds, maxvals

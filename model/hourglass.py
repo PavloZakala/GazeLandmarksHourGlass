@@ -9,7 +9,7 @@ import torch.nn.functional as F
 # from .preresnet import BasicBlock, Bottleneck
 
 
-__all__ = ['HourglassNet', 'hg']
+__all__ = ['HourglassNet', 'make_hourglass']
 
 class Bottleneck(nn.Module):
     expansion = 2
@@ -178,7 +178,6 @@ class HourglassNet(nn.Module):
         return out
 
 
-def hg(**kwargs):
-    model = HourglassNet(Bottleneck, num_stacks=kwargs['num_stacks'], num_blocks=kwargs['num_blocks'],
-                         num_classes=kwargs['num_classes'])
+def make_hourglass(num_stacks, num_blocks, num_classes):
+    model = HourglassNet(Bottleneck, num_stacks=num_stacks, num_blocks=num_blocks, num_classes=num_classes)
     return model

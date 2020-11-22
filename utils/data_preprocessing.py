@@ -6,10 +6,11 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 from torch.utils.data import Dataset
-import data_augmentation
-from utils import load_landmarks, multivariate_gaussian
+from utils.tools import load_landmarks, multivariate_gaussian
+from utils import data_augmentation
+from utils import metrics
 
-DATA_FOLDER = r"/home/pavlo/PycharmProjects/gaze/data"
+DATA_FOLDER = r"/home/pavlo/PycharmProjects/GazeLandmarksHourGlass/data"
 
 
 class EyeLandmarksDataset(Dataset):
@@ -119,8 +120,8 @@ class EyeLandmarksDataset(Dataset):
 
         self._data_path = data_path
         self.path_list = self.__data_preprocess(self._data_path)
-        self._images, self._landmarks = self.__load_data(self.path_list, load_full=load_full)
-        indexes = np.arange(len(self._images))
+        images, landmarks = self.__load_data(self.path_list, load_full=load_full)
+        indexes = np.arange(len(landmarks))
         train_indexes, test_indexes = train_test_split(indexes, train_size=0.85, random_state=0)
 
         self.difficult = 0.0  # [0.0, 1.0]
@@ -145,7 +146,8 @@ class EyeLandmarksDataset(Dataset):
             self.LINE_COUNT = data_config.get("line_count", 2)
             self.DOWN_UP_SCALE = data_config.get("down_up_scale", 0.4)
             self.SIGMA_HEAD_MAP = data_config.get("sigma_head_map", 35.0)
-
+        self._images = np.array(images)[self._indexes]
+        self._landmarks = np.array(landmarks)[self._indexes]
         print("Max shift:", self.MAX_SHIFT)
         print("Delta scale:", self.DELTA_SCALE)
         print("Max rotation angle:", self.MAX_ROTATION_ANGLE)
@@ -156,9 +158,6 @@ class EyeLandmarksDataset(Dataset):
 
     def set_difficult(self, difficult):
         self.difficult = difficult
-
-    def get_indexes(self):
-        return self._indexes
 
     def __len__(self):
         return len(self._indexes)
@@ -190,8 +189,9 @@ class EyeLandmarksDataset(Dataset):
         data_augmentation.down_up_scale(data, scale=self.DOWN_UP_SCALE, difficult=self.difficult)
 
         data_augmentation.make_map(data, size=self.IMAGE_SIZE, sigma=self.SIGMA_HEAD_MAP, difficult=self.difficult)
+        data_augmentation.data_normalizarion(data)
 
-        return data["image"], data["heat_map"]
+        return np.transpose(data["image"].astype(np.float32), (2, 0, 1)), data["heat_map"].astype(np.float32)
 
 
 if __name__ == '__main__':
@@ -207,9 +207,9 @@ if __name__ == '__main__':
     })
     dataset.set_difficult(0.6)
     difficult = 0.0
-    for idx in tqdm(dataset.get_indexes()):
+    for idx in tqdm(range(len(dataset))):
         image, heat_map = dataset[idx]
-
+        image = np.transpose(image, (1, 2, 0))
         cv2.imshow("image", cv2.resize(image, (120 * 3, 72 * 3)))
         cv2.imshow("head_map", cv2.resize(heat_map.sum(0), (120 * 4, 72 * 4)))
         key = cv2.waitKey()

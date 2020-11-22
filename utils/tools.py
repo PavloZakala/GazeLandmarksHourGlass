@@ -11,6 +11,7 @@ def multivariate_gaussian(pos, mu, sigma):
 
     return np.exp(-fac / 2) / N
 
+
 def get_head_pose_and_gaze(data_dict):
     """
     Retrieves head_pose and gaze_direction from .json file

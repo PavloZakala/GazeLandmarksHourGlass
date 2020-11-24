@@ -15,11 +15,8 @@ from utils.data_preprocessing import EyeLandmarksDataset, TrainDataset, TestData
 from losses import JointsMSELoss
 from utils.optimizer import get_optimizer
 
-best_acc = 0.0
 
-
-def train(train_loader, model, criterion, optimizer, debug=False):
-    global best_acc
+def train(train_loader, model, criterion, optimizer, debug=False, best_acc=None):
 
     batch_time = AverageMeter()
     data_time = AverageMeter()
@@ -95,11 +92,10 @@ def train(train_loader, model, criterion, optimizer, debug=False):
         bar.next()
 
     bar.finish()
-    return losses.avg, acces.avg
+    return losses.avg, acces.avg, best_acc
 
 
-def validate(val_loader, model, criterion, num_classes=17, debug=False):
-    global best_acc
+def validate(val_loader, model, criterion, num_classes=17, debug=False, best_acc=None):
 
     batch_time = AverageMeter()
     data_time = AverageMeter()
@@ -179,7 +175,7 @@ def validate(val_loader, model, criterion, num_classes=17, debug=False):
             bar.next()
 
         bar.finish()
-    return losses.avg, acces.avg, predictions
+    return losses.avg, acces.avg, predictions, best_acc
 
 
 if __name__ == '__main__':
@@ -214,6 +210,7 @@ if __name__ == '__main__':
 
     criterion = JointsMSELoss().to(device)
     optimizer = get_optimizer("adam", model, lr=LR)
+    best_acc = 0.0
 
     LOAD_FILE = None  # None | r''
 
@@ -267,10 +264,10 @@ if __name__ == '__main__':
         train_dataset.set_difficult((epoch + 1) / EPOCH_SIZE)
         test_dataset.set_difficult((epoch + 1) / EPOCH_SIZE)
         # train for one epoch
-        train_loss, train_acc = train(train_dataloader, model, criterion, optimizer)
+        train_loss, train_acc, best_acc = train(train_dataloader, model, criterion, optimizer, best_acc)
 
         # evaluate on validation set
-        valid_loss, valid_acc, predictions = validate(test_dataloader, model, criterion)
+        valid_loss, valid_acc, predictions, best_acc = validate(test_dataloader, model, criterion, best_acc)
 
         # remember best acc and save checkpoint
         is_best = valid_acc > best_acc

@@ -22,7 +22,7 @@ def train(train_loader, model, criterion, optimizer, debug=False, best_acc=None)
     data_time = AverageMeter()
     losses = AverageMeter()
     acces = AverageMeter()
-
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # switch to train mode
     model.train()
 
@@ -101,7 +101,7 @@ def validate(val_loader, model, criterion, num_classes=17, debug=False, best_acc
     data_time = AverageMeter()
     losses = AverageMeter()
     acces = AverageMeter()
-
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # predictions
     predictions = torch.Tensor(val_loader.dataset.__len__(), num_classes, 2)
 

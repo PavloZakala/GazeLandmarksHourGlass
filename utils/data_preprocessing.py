@@ -42,7 +42,7 @@ class TrainDataset(Dataset):
         self.difficult = difficult
 
     def __len__(self):
-        return len(self._indexes[:10])
+        return len(self._indexes)
 
     def __getitem__(self, item):
         image, landmarks = self._dataset[self._indexes[item]]
@@ -104,7 +104,7 @@ class TestDataset(Dataset):
         self.difficult = difficult
 
     def __len__(self):
-        return len(self._indexes[:10])
+        return len(self._indexes)
 
     def __getitem__(self, item):
         image, landmarks = self._dataset[self._indexes[item]]

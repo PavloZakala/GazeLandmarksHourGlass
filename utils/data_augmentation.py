@@ -88,7 +88,7 @@ def make_map(data, sigma=1.0, size=(120, 72), difficult=1.0):
         pos[:, :, 1] = Y
 
         Z = multivariate_gaussian(pos, point, np.array([[sigma, 0.], [0., sigma]]))
-        heat_map.append(Z / Z.max())
+        heat_map.append(Z / (Z.max() + 1e6))
     data["heat_map"] = np.stack(heat_map)
 
 

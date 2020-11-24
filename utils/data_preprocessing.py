@@ -10,7 +10,8 @@ from utils.tools import load_landmarks, multivariate_gaussian
 from utils import data_augmentation
 from utils import metrics
 
-DATA_FOLDER = r"/home/pavlo/PycharmProjects/GazeLandmarksHourGlass/data"
+# DATA_FOLDER = r"/home/pavlo/PycharmProjects/GazeLandmarksHourGlass/data"
+DATA_FOLDER = r"C:\Users\Pavlo\PycharmProjects\GazeLandmarksHourGlass\data"
 
 
 class TrainDataset(Dataset):
@@ -41,7 +42,7 @@ class TrainDataset(Dataset):
         self.difficult = difficult
 
     def __len__(self):
-        return len(self._indexes)
+        return len(self._indexes[:10])
 
     def __getitem__(self, item):
         image, landmarks = self._dataset[self._indexes[item]]
@@ -68,7 +69,8 @@ class TrainDataset(Dataset):
         data_augmentation.add_line(data, count=self.LINE_COUNT, difficult=self.difficult)
         data_augmentation.down_up_scale(data, scale=self.DOWN_UP_SCALE, difficult=self.difficult)
 
-        data_augmentation.make_map(data, size=self.IMAGE_SIZE, sigma=self.SIGMA_HEAD_MAP, difficult=self.difficult)
+        data_augmentation.make_map(data, size=(self.IMAGE_SIZE[0] // 2, self.IMAGE_SIZE[1] // 2),
+                                   sigma=self.SIGMA_HEAD_MAP, difficult=self.difficult)
         data_augmentation.data_normalizarion(data)
 
         return np.transpose(data["image"].astype(np.float32), (2, 0, 1)), data["heat_map"].astype(np.float32)
@@ -102,7 +104,7 @@ class TestDataset(Dataset):
         self.difficult = difficult
 
     def __len__(self):
-        return len(self._indexes)
+        return len(self._indexes[:10])
 
     def __getitem__(self, item):
         image, landmarks = self._dataset[self._indexes[item]]
@@ -129,8 +131,13 @@ class TestDataset(Dataset):
         data_augmentation.add_line(data, count=self.LINE_COUNT, difficult=self.difficult)
         data_augmentation.down_up_scale(data, scale=self.DOWN_UP_SCALE, difficult=self.difficult)
 
-        data_augmentation.make_map(data, size=self.IMAGE_SIZE, sigma=self.SIGMA_HEAD_MAP, difficult=self.difficult)
+        data_augmentation.make_map(data, size=(self.IMAGE_SIZE[0] // 2, self.IMAGE_SIZE[1] // 2),
+                                   sigma=self.SIGMA_HEAD_MAP, difficult=self.difficult)
         data_augmentation.data_normalizarion(data)
+
+        meta = {
+            "landmarks": data["landmarks"]
+        }
 
         return np.transpose(data["image"].astype(np.float32), (2, 0, 1)), data["heat_map"].astype(np.float32)
 
@@ -263,19 +270,22 @@ class EyeLandmarksDataset(Dataset):
 
 if __name__ == '__main__':
 
-    dataset = EyeLandmarksDataset(DATA_FOLDER, load_full=False, data_config={
+    unity_eye = EyeLandmarksDataset(DATA_FOLDER, load_full=False)
+    dataset = TrainDataset(unity_eye, data_config={
         "max_shift": (5, 7),
         "delta_scale": 0.2,
         "max_rotation_angle": 0.5,
-        "image_size": (120, 72),
+        "image_size": (128, 96),
         "line_count": 2,
         "down_up_scale": 0.4,
         "sigma_head_map": 35.0,
     })
-    dataset.set_difficult(0.6)
+    dataset.set_difficult(0.0)
     difficult = 0.0
     for idx in tqdm(range(len(dataset))):
         image, heat_map = dataset[idx]
+        print(image.shape)
+        print(heat_map.shape)
         image = np.transpose(image, (1, 2, 0))
         cv2.imshow("image", cv2.resize(image, (120 * 3, 72 * 3)))
         cv2.imshow("head_map", cv2.resize(heat_map.sum(0), (120 * 4, 72 * 4)))

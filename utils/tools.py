@@ -105,10 +105,15 @@ def load_landmarks(json_path):
 
 
 def save_checkpoint_during_time(state, checkpoint):
+    if not os.path.isdir(checkpoint):
+        os.mkdir(checkpoint)
+
     filepath = os.path.join(checkpoint, "{}.pth".format(time.strftime("%d_%m (%H %M)", time.gmtime())))
     torch.save(state, filepath)
 
 def save_checkpoint(state, is_best, checkpoint='checkpoint', filename='checkpoint.pth', snapshot=None):
+    if not os.path.isdir(checkpoint):
+        os.mkdir(checkpoint)
 
     filepath = os.path.join(checkpoint, filename)
     torch.save(state, filepath)

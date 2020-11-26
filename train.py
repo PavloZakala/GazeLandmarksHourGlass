@@ -16,7 +16,7 @@ from utils.tools import adjust_learning_rate, save_checkpoint, save_checkpoint_d
 
 
 def train(train_loader, model, criterion, optimizer,
-          print_step=10, save_step=1200, best_acc=None,
+          train_size=1000, print_step=10, save_step=1200, best_acc=None,
           checkpoint_path=r""):
     batch_time = AverageMeter()
     data_time = AverageMeter()
@@ -28,8 +28,9 @@ def train(train_loader, model, criterion, optimizer,
 
     end = time.time()
     bar = Bar('Train', max=len(train_loader))
-    for i, (images, heat_maps, meta) in enumerate(train_loader):
-
+    iter_train_loader = iter(train_loader)
+    for i in range(train_size):
+        (images, heat_maps, meta) = next(iter_train_loader)
         data_time.update(time.time() - end)
 
         optimizer.zero_grad()
@@ -227,8 +228,9 @@ if __name__ == '__main__':
         train_dataset.set_difficult(difficult[epoch])
         test_dataset.set_difficult(difficult[epoch])
         # train for one epoch
-        train_loss, train_acc, best_acc = train(train_dataloader, model, criterion, optimizer, print_step=1,
-                                                save_step=2, checkpoint_path=CHECKPOINT_PATH, best_acc=best_acc)
+        train_loss, train_acc, best_acc = train(train_dataloader, model, criterion, optimizer, train_size=1000,
+                                                print_step=1, save_step=2, checkpoint_path=CHECKPOINT_PATH,
+                                                best_acc=best_acc)
 
         # evaluate on validation set
         valid_loss, valid_acc, best_acc = validate(test_dataloader, model, criterion, print_step=1, best_acc=best_acc)

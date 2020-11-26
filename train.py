@@ -48,7 +48,7 @@ def train(train_loader, model, criterion, optimizer,
         loss.backward()
         optimizer.step()
 
-        acc = landmarks_metrics_eval(to_numpy(output), to_numpy(heat_maps), to_numpy(meta["iris_diameter"]))
+        acc = landmarks_metrics_eval(to_numpy(output), to_numpy(heat_maps), to_numpy(meta["iris_diameter"]) / 2.0)
 
         # measure accuracy and record loss
         losses.update(loss.item(), images.size(0))
@@ -113,7 +113,7 @@ def validate(val_loader, model, criterion,
                 loss += criterion(o, heat_maps)
             output = output[-1]
 
-            acc = landmarks_metrics_eval(to_numpy(output), to_numpy(heat_maps), to_numpy(meta["iris_diameter"]))
+            acc = landmarks_metrics_eval(to_numpy(output), to_numpy(heat_maps), to_numpy(meta["iris_diameter"]) / 2.0)
 
             # measure accuracy and record loss
             losses.update(loss.item(), images.size(0))

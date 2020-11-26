@@ -12,10 +12,12 @@ from model.hourglass import HourglassNet
 from utils.data_preprocessing import EyeLandmarksDataset, TrainDataset, TestDataset
 from utils.metrics import landmarks_metrics_eval, AverageMeter
 from utils.optimizer import get_optimizer
-from utils.tools import adjust_learning_rate, save_checkpoint, to_numpy
+from utils.tools import adjust_learning_rate, save_checkpoint, save_checkpoint_during_time, to_numpy
 
 
-def train(train_loader, model, criterion, optimizer, print_size=10, best_acc=None):
+def train(train_loader, model, criterion, optimizer,
+          print_step=10, save_step=1200, best_acc=None,
+          checkpoint_path=r""):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -55,7 +57,7 @@ def train(train_loader, model, criterion, optimizer, print_size=10, best_acc=Non
         batch_time.update(time.time() - end)
         end = time.time()
 
-        if (i + 1) % print_size == 0:
+        if (i + 1) % print_step == 0:
             print(
                 '({batch}/{size}) Batch: {bt:.3f}s | Total: {total:} | ETA: {eta:} | Loss: {loss:.2e} | Acc: {acc1: .3f}, {acc2: .3f}'.format(
                     batch=i + 1,
@@ -69,11 +71,21 @@ def train(train_loader, model, criterion, optimizer, print_size=10, best_acc=Non
                 ))
         bar.next()
 
+        if (i + 1) % save_step == 0:
+            print("Save checkpoint {}".format(checkpoint_path))
+            save_checkpoint_during_time({
+                'epoch': 1,
+                'state_dict': model.state_dict(),
+                'best_acc': acc[0],
+                'optimizer': optimizer.state_dict(),
+            }, checkpoint=checkpoint_path)
+
     bar.finish()
     return losses.avg, acces.avg, best_acc
 
 
-def validate(val_loader, model, criterion, print_size=10, best_acc=None):
+def validate(val_loader, model, criterion,
+             print_step=10, best_acc=None):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -110,7 +122,7 @@ def validate(val_loader, model, criterion, print_size=10, best_acc=None):
             batch_time.update(time.time() - end)
             end = time.time()
 
-            if (i + 1) % print_size == 0:
+            if (i + 1) % print_step == 0:
                 print(
                     '({batch}/{size}) Batch: {bt:.3f}s | Total: {total:} | ETA: {eta:} | Loss: {loss:.2e} | Acc: {acc1: .3f}, {acc2: .3f}'.format(
                         batch=i + 1,
@@ -215,10 +227,11 @@ if __name__ == '__main__':
         train_dataset.set_difficult(difficult[epoch])
         test_dataset.set_difficult(difficult[epoch])
         # train for one epoch
-        train_loss, train_acc, best_acc = train(train_dataloader, model, criterion, optimizer, print_size=1, best_acc=best_acc)
+        train_loss, train_acc, best_acc = train(train_dataloader, model, criterion, optimizer, print_step=1,
+                                                save_step=2, checkpoint_path=CHECKPOINT_PATH, best_acc=best_acc)
 
         # evaluate on validation set
-        valid_loss, valid_acc, best_acc = validate(test_dataloader, model, criterion, print_size=1, best_acc=best_acc)
+        valid_loss, valid_acc, best_acc = validate(test_dataloader, model, criterion, print_step=1, best_acc=best_acc)
 
         save_checkpoint({
             'epoch': epoch + 1,

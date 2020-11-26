@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import time
 
 import numpy as np
 import scipy.io
@@ -103,16 +104,20 @@ def load_landmarks(json_path):
     return data_dict
 
 
-def save_checkpoint(state, is_best, checkpoint='checkpoint', filename='checkpoint.pth.tar', snapshot=None):
+def save_checkpoint_during_time(state, checkpoint):
+    filepath = os.path.join(checkpoint, "{}.pth".format(time.strftime("%d.%m (%H %M)", time.gmtime())))
+    torch.save(state, filepath)
+
+def save_checkpoint(state, is_best, checkpoint='checkpoint', filename='checkpoint.pth', snapshot=None):
 
     filepath = os.path.join(checkpoint, filename)
     torch.save(state, filepath)
 
     if snapshot and state["epoch"] % snapshot == 0:
-        shutil.copyfile(filepath, os.path.join(checkpoint, 'checkpoint_{}.pth.tar'.format(state["epoch"])))
+        shutil.copyfile(filepath, os.path.join(checkpoint, 'checkpoint_{}.pth'.format(state["epoch"])))
 
     if is_best:
-        shutil.copyfile(filepath, os.path.join(checkpoint, 'model_best.pth.tar'))
+        shutil.copyfile(filepath, os.path.join(checkpoint, 'model_best.pth'))
 
 
 def save_pred(preds, checkpoint='checkpoint', filename='preds_valid.mat'):

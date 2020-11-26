@@ -74,7 +74,7 @@ def train(train_loader, model, criterion, optimizer,
         if (i + 1) % save_step == 0:
             print("Save checkpoint {}".format(checkpoint_path))
             save_checkpoint_during_time({
-                'epoch': 1,
+                'epoch': -1,
                 'state_dict': model.state_dict(),
                 'best_acc': acc[0],
                 'optimizer': optimizer.state_dict(),

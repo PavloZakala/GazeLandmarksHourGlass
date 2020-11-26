@@ -13,6 +13,53 @@ from utils import metrics
 # DATA_FOLDER = r"/home/pavlo/PycharmProjects/GazeLandmarksHourGlass/data"
 DATA_FOLDER = r"C:\Users\Pavlo\PycharmProjects\GazeLandmarksHourGlass\data"
 
+def _get_item(idx, dataset, configs:dict):
+    image, landmarks = dataset[idx]
+
+    MAX_SHIFT = configs.get("max_shift", None)
+    DELTA_SCALE = configs.get("delta_scale", None)
+    MAX_ROTATION_ANGLE = configs.get("max_rotation_angle", None)
+    IMAGE_SIZE = configs.get("image_size", None)
+    LINE_COUNT = configs.get("line_count", None)
+    DOWN_UP_SCALE = configs.get("down_up_scale", None)
+    SIGMA_HEAD_MAP = configs.get("sigma_head_map", None)
+    difficult = configs.get("difficult", None)
+
+    h, w, _ = image.shape
+
+    x_borders = (w / 6, 5 * w / 6)
+    y_borders = (h / 8, 7 * h / 8)
+
+    data = {
+        "image": image,
+        "bound_box": (x_borders, y_borders),
+        "landmarks": landmarks,
+    }
+
+    data_augmentation.shift(data, max_shift=MAX_SHIFT, difficult=difficult)
+    data_augmentation.scale(data, delta_value=DELTA_SCALE, difficult=difficult)
+    data_augmentation.random_rotation(data, max_angle=MAX_ROTATION_ANGLE, difficult=difficult)
+
+    data_augmentation.crop(data)
+    data_augmentation.resize(data, size=IMAGE_SIZE)
+
+    data_augmentation.random_gamma_corrected(data, difficult=difficult)
+    data_augmentation.add_line(data, count=LINE_COUNT, difficult=difficult)
+    data_augmentation.down_up_scale(data, scale=DOWN_UP_SCALE, difficult=difficult)
+
+    data_augmentation.make_map(data, size=(IMAGE_SIZE[0] // 2, IMAGE_SIZE[1] // 2),
+                               sigma=SIGMA_HEAD_MAP, difficult=difficult)
+    data_augmentation.data_normalizarion(data)
+
+    iris_diameter = np.linalg.norm(data["landmarks"][[-2]] - data["landmarks"][6:14], axis=1).max()
+
+    meta = {
+        "landmarks": data["landmarks"],
+        "iris_center": data["landmarks"][-2],
+        "iris_diameter": iris_diameter,
+    }
+
+    return np.transpose(data["image"].astype(np.float32), (2, 0, 1)), data["heat_map"].astype(np.float32), meta
 
 class TrainDataset(Dataset):
 
@@ -30,6 +77,7 @@ class TrainDataset(Dataset):
         self.DOWN_UP_SCALE = data_config.get("down_up_scale", 0.4)
         self.SIGMA_HEAD_MAP = data_config.get("sigma_head_map", 35.0)
 
+        print("***********************************")
         print("Max shift:", self.MAX_SHIFT)
         print("Delta scale:", self.DELTA_SCALE)
         print("Max rotation angle:", self.MAX_ROTATION_ANGLE)
@@ -37,6 +85,7 @@ class TrainDataset(Dataset):
         print("Line count:", self.LINE_COUNT)
         print("Down up scale:", self.DOWN_UP_SCALE)
         print("Sigma head map:", self.SIGMA_HEAD_MAP)
+        print("***********************************")
 
     def set_difficult(self, difficult):
         self.difficult = difficult
@@ -45,36 +94,18 @@ class TrainDataset(Dataset):
         return len(self._indexes)
 
     def __getitem__(self, item):
-        image, landmarks = self._dataset[self._indexes[item]]
-
-        h, w, _ = image.shape
-
-        x_borders = (w / 6, 5 * w / 6)
-        y_borders = (h / 8, 7 * h / 8)
-
-        data = {
-            "image": image,
-            "bound_box": (x_borders, y_borders),
-            "landmarks": landmarks,
-        }
-
-        data_augmentation.shift(data, max_shift=self.MAX_SHIFT, difficult=self.difficult)
-        data_augmentation.scale(data, delta_value=self.DELTA_SCALE, difficult=self.difficult)
-        data_augmentation.random_rotation(data, max_angle=self.MAX_ROTATION_ANGLE, difficult=self.difficult)
-
-        data_augmentation.crop(data)
-        data_augmentation.resize(data, size=self.IMAGE_SIZE)
-
-        data_augmentation.random_gamma_corrected(data, difficult=self.difficult)
-        data_augmentation.add_line(data, count=self.LINE_COUNT, difficult=self.difficult)
-        data_augmentation.down_up_scale(data, scale=self.DOWN_UP_SCALE, difficult=self.difficult)
-
-        data_augmentation.make_map(data, size=(self.IMAGE_SIZE[0] // 2, self.IMAGE_SIZE[1] // 2),
-                                   sigma=self.SIGMA_HEAD_MAP, difficult=self.difficult)
-        data_augmentation.data_normalizarion(data)
-
-        return np.transpose(data["image"].astype(np.float32), (2, 0, 1)), data["heat_map"].astype(np.float32)
-
+        res = _get_item(self._indexes[item], self._dataset,
+                         {
+                             "max_shift": self.MAX_SHIFT,
+                             "delta_scale": self.DELTA_SCALE,
+                             "max_rotation_angle": self.MAX_ROTATION_ANGLE,
+                             "image_size": self.IMAGE_SIZE,
+                             "line_count": self.LINE_COUNT,
+                             "down_up_scale": self.DOWN_UP_SCALE,
+                             "sigma_head_map":self.SIGMA_HEAD_MAP,
+                             "difficult": self.difficult,
+                         })
+        return res
 
 class TestDataset(Dataset):
 
@@ -91,7 +122,7 @@ class TestDataset(Dataset):
         self.LINE_COUNT = data_config.get("line_count", 2)
         self.DOWN_UP_SCALE = 0.0
         self.SIGMA_HEAD_MAP = 1.0
-
+        print("***********************************")
         print("Max shift:", self.MAX_SHIFT)
         print("Delta scale:", self.DELTA_SCALE)
         print("Max rotation angle:", self.MAX_ROTATION_ANGLE)
@@ -99,6 +130,7 @@ class TestDataset(Dataset):
         print("Line count:", self.LINE_COUNT)
         print("Down up scale:", self.DOWN_UP_SCALE)
         print("Sigma head map:", self.SIGMA_HEAD_MAP)
+        print("***********************************")
 
     def set_difficult(self, difficult):
         self.difficult = difficult
@@ -107,40 +139,18 @@ class TestDataset(Dataset):
         return len(self._indexes)
 
     def __getitem__(self, item):
-        image, landmarks = self._dataset[self._indexes[item]]
-
-        h, w, _ = image.shape
-
-        x_borders = (w / 6, 5 * w / 6)
-        y_borders = (h / 8, 7 * h / 8)
-
-        data = {
-            "image": image,
-            "bound_box": (x_borders, y_borders),
-            "landmarks": landmarks,
-        }
-
-        data_augmentation.shift(data, max_shift=self.MAX_SHIFT, difficult=self.difficult)
-        data_augmentation.scale(data, delta_value=self.DELTA_SCALE, difficult=self.difficult)
-        data_augmentation.random_rotation(data, max_angle=self.MAX_ROTATION_ANGLE, difficult=self.difficult)
-
-        data_augmentation.crop(data)
-        data_augmentation.resize(data, size=self.IMAGE_SIZE)
-
-        data_augmentation.random_gamma_corrected(data, difficult=self.difficult)
-        data_augmentation.add_line(data, count=self.LINE_COUNT, difficult=self.difficult)
-        data_augmentation.down_up_scale(data, scale=self.DOWN_UP_SCALE, difficult=self.difficult)
-
-        data_augmentation.make_map(data, size=(self.IMAGE_SIZE[0] // 2, self.IMAGE_SIZE[1] // 2),
-                                   sigma=self.SIGMA_HEAD_MAP, difficult=self.difficult)
-        data_augmentation.data_normalizarion(data)
-
-        meta = {
-            "landmarks": data["landmarks"]
-        }
-
-        return np.transpose(data["image"].astype(np.float32), (2, 0, 1)), data["heat_map"].astype(np.float32)
-
+        res = _get_item(self._indexes[item], self._dataset,
+                         {
+                             "max_shift": self.MAX_SHIFT,
+                             "delta_scale": self.DELTA_SCALE,
+                             "max_rotation_angle": self.MAX_ROTATION_ANGLE,
+                             "image_size": self.IMAGE_SIZE,
+                             "line_count": self.LINE_COUNT,
+                             "down_up_scale": self.DOWN_UP_SCALE,
+                             "sigma_head_map": self.SIGMA_HEAD_MAP,
+                             "difficult": self.difficult,
+                         })
+        return res
 
 class EyeLandmarksDataset(Dataset):
     PATH = r"/home/pavlo/UnityEyes/imgs"
@@ -211,23 +221,6 @@ class EyeLandmarksDataset(Dataset):
         return path_list
 
     @staticmethod
-    def make_map(data, sigma=1.0, size=(120, 72)):
-
-        heat_map = []
-        for point in data["landmarks"]:
-            X = np.arange(size[0]).astype(np.float32)
-            Y = np.arange(size[1]).astype(np.float32)
-            X, Y = np.meshgrid(X, Y)
-
-            pos = np.empty(X.shape + (2,))
-            pos[:, :, 0] = X
-            pos[:, :, 1] = Y
-
-            Z = multivariate_gaussian(pos, point, np.array([[sigma, 0.], [0., sigma]]))
-            heat_map.append(Z / Z.max())
-        data["heat_map"] = np.stack(heat_map)
-
-    @staticmethod
     def __load_data(path_list, load_full=True):
 
         if not load_full:
@@ -271,24 +264,23 @@ class EyeLandmarksDataset(Dataset):
 if __name__ == '__main__':
 
     unity_eye = EyeLandmarksDataset(DATA_FOLDER, load_full=False)
-    dataset = TrainDataset(unity_eye, data_config={
-        "max_shift": (5, 7),
-        "delta_scale": 0.2,
-        "max_rotation_angle": 0.5,
+    dataset = TestDataset(unity_eye, {
+        "line_count": 0,
         "image_size": (128, 96),
-        "line_count": 2,
-        "down_up_scale": 0.4,
-        "sigma_head_map": 35.0,
     })
-    dataset.set_difficult(0.0)
+    dataset.set_difficult(0.5)
     difficult = 0.0
+    from utils.visualize import show_image_with_heatmap, show_image_with_landmarks
     for idx in tqdm(range(len(dataset))):
-        image, heat_map = dataset[idx]
+        image, heat_map, meta = dataset[idx]
+        show_image_with_heatmap(np.transpose(image, (1, 2, 0)), heat_map.sum(0))
+        show_image_with_landmarks(np.transpose(image, (1, 2, 0)), meta["landmarks"])
+
         print(image.shape)
         print(heat_map.shape)
-        image = np.transpose(image, (1, 2, 0))
-        cv2.imshow("image", cv2.resize(image, (120 * 3, 72 * 3)))
-        cv2.imshow("head_map", cv2.resize(heat_map.sum(0), (120 * 4, 72 * 4)))
+        image = (256 * np.transpose(image, (1, 2, 0))).astype(np.uint8)
+        cv2.imshow("image", image)
+        cv2.imshow("head_map", heat_map.sum(0))
         key = cv2.waitKey()
 
         if key == ord('q'):

@@ -1,9 +1,11 @@
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
 from utils.tools import multivariate_gaussian
 
 
 def shift(data, max_shift=(5, 7), difficult=1.0):
+
     x_shift, y_shift = np.around((np.random.rand(2) * 2 - 1.0) * np.array(max_shift)) * difficult
 
     ((x_min, x_max), (y_min, y_max)) = data["bound_box"]
@@ -11,6 +13,7 @@ def shift(data, max_shift=(5, 7), difficult=1.0):
 
 
 def scale(data, delta_value=0.1, difficult=1.0):
+
     score, = (np.random.rand(1) * 2 - 1.0) * delta_value * difficult + 1.0
     ((x_min, x_max), (y_min, y_max)) = data["bound_box"]
 
@@ -33,6 +36,7 @@ def random_gamma_corrected(data, gamma_range=(0.5, 2.0), difficult=1.0):
 
 
 def random_rotation(data, max_angle=0.3, difficult=1.0):
+
     angle, = (np.random.rand(1) * 2 - 1.0) * max_angle * difficult
     if "image" in data:
         image = data["image"]
@@ -87,9 +91,11 @@ def make_map(data, sigma=1.0, size=(120, 72), difficult=1.0):
         pos[:, :, 0] = X
         pos[:, :, 1] = Y
 
-        Z = multivariate_gaussian(pos, point, np.array([[sigma, 0.], [0., sigma]]))
-        heat_map.append(Z / (Z.max() + 1e6))
+        Z = multivariate_gaussian(pos, point / 2.0, np.array([[sigma, 0.], [0., sigma]]))
+        heat_map.append(Z / Z.max())
     data["heat_map"] = np.stack(heat_map)
+    # plt.imshow(data["heat_map"].sum(0))
+    # plt.show()
 
 
 def crop(data):
@@ -113,11 +119,12 @@ def resize(data, size=(120, 72)):
 
 def data_normalizarion(data):
     if "image" in data:
-        data["image"] = 2.0 * data["image"] / 256.0 - 1.0
+        data["image"] = data["image"] / 256.0
 
 
-def get_landmarks_from_heatmap(head_map):
-    return np.array([np.unravel_index(np.argmax(map), map.shape) for map in head_map])[:, [1, 0]].astype(np.float32)
+def get_landmarks_from_heatmap(batch_heat_map):
+    return np.array([[np.unravel_index(np.argmax(map), map.shape) for map in heat_map]
+                     for heat_map in batch_heat_map])[:, :, [1, 0]].astype(np.float32)
 
 def get_max_preds(batch_heatmaps):
     '''

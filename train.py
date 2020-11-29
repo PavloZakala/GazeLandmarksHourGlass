@@ -27,7 +27,7 @@ def train(train_loader, model, criterion, optimizer,
     model.train()
 
     end = time.time()
-    bar = Bar('Train', max=len(train_loader))
+    bar = Bar('Train', max=train_size)
     iter_train_loader = iter(train_loader)
     for i in range(train_size):
         (images, heat_maps, meta) = next(iter_train_loader)
@@ -62,7 +62,7 @@ def train(train_loader, model, criterion, optimizer,
             print(
                 '({batch}/{size}) Batch: {bt:.3f}s | Total: {total:} | ETA: {eta:} | Loss: {loss:.2e} | Acc: {acc1: .3f}, {acc2: .3f}'.format(
                     batch=i + 1,
-                    size=len(train_loader),
+                    size=train_size,
                     bt=batch_time.val,
                     total=bar.elapsed_td,
                     eta=bar.eta_td,
@@ -143,7 +143,7 @@ def validate(val_loader, model, criterion,
 
 if __name__ == '__main__':
 
-    EPOCH_SIZE = 10
+    EPOCH_SIZE = 5
     BATCH_SIZE = 4
     NUM_WORKERS = 1
     SNAPSHOT = 2
@@ -152,8 +152,6 @@ if __name__ == '__main__':
     CHECKPOINT_PATH = r"C:\Users\Pavlo\PycharmProjects\GazeLandmarksHourGlass\checkpoints\exp1"
 
     LR = 0.005
-    SCHEDULE = [3, 6, 9]
-    GAMMA = 1.0
 
     # create checkpoint dir
     if not os.path.isdir(CHECKPOINT_PATH):
@@ -219,8 +217,10 @@ if __name__ == '__main__':
     valid_losses = []
     train_acc_list = []
     valid_acc_list = []
-    difficult = np.linspace(0., 1., EPOCH_SIZE)
 
+    difficult = np.linspace(0.15, 0.95, EPOCH_SIZE)
+    SCHEDULE = [1, 2, 4]
+    GAMMA = 0.8
     for epoch in range(start_epoch, EPOCH_SIZE):
         lr = adjust_learning_rate(optimizer, epoch, lr, SCHEDULE, GAMMA)
         print('\nEpoch: %d | LR: %.8f' % (epoch + 1, lr))
@@ -228,7 +228,7 @@ if __name__ == '__main__':
         train_dataset.set_difficult(difficult[epoch])
         test_dataset.set_difficult(difficult[epoch])
         # train for one epoch
-        train_loss, train_acc, best_acc = train(train_dataloader, model, criterion, optimizer, train_size=1000,
+        train_loss, train_acc, best_acc = train(train_dataloader, model, criterion, optimizer, train_size=800,
                                                 print_step=1, save_step=2, checkpoint_path=CHECKPOINT_PATH,
                                                 best_acc=best_acc)
 

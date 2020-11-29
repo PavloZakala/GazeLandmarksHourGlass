@@ -106,8 +106,11 @@ def crop(data):
 
     if "image" in data:
         h, w, _ = data["image"].shape
-        data["image"] = data["image"][min(0, int(y_min)):max(h, int(y_max)),
-                                      min(0, int(x_min)):max(w, int(x_max))]
+        data["image"] = data["image"][max(0, int(y_min)):min(h, int(y_max)),
+                                      max(0, int(x_min)):min(w, int(x_max))]
+
+        # data["image"] = data["image"][int(y_min):int(y_max),
+        #                               int(x_min):int(x_max)]
 
 
 def resize(data, size=(120, 72)):

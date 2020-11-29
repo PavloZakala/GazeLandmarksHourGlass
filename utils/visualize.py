@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 import cv2
 
 
-def show_image_with_heatmap(image, heatmap, save_name):
+def show_image_with_heatmap(image, heatmap, save_name=r""):
     heatmap = cv2.resize(heatmap, (image.shape[1], image.shape[0]))
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -15,7 +15,7 @@ def show_image_with_heatmap(image, heatmap, save_name):
     # plt.show()
 
 
-def show_image_with_landmarks(image, landmarks, colors, save_name):
+def show_image_with_landmarks(image, landmarks, colors, save_name=r""):
     image = (cv2.cvtColor(image, cv2.COLOR_BGR2RGB).copy() * 256.0).astype(np.uint8)
 
     for p, c in zip(landmarks, colors):

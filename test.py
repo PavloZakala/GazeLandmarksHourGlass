@@ -1,16 +1,18 @@
+import os
 import time
-import torch
+
 import numpy as np
+import torch
 from progress.bar import Bar as Bar
 from torch.utils.data import DataLoader
 
-from utils.metrics import landmarks_metrics_eval, AverageMeter
 from model.hourglass import HourglassNet
-from utils.data_preprocessing import EyeLandmarksDataset, TrainDataset, TestDataset
-from utils.tools import adjust_learning_rate, save_checkpoint, to_numpy
-from utils.visualize import show_image_with_heatmap, show_image_with_landmarks
-from utils.data_augmentation import get_landmarks_from_heatmap
 from utils import data_augmentation
+from utils.data_augmentation import get_landmarks_from_heatmap
+from utils.data_preprocessing import EyeLandmarksDataset, TestDataset
+from utils.metrics import landmarks_metrics_eval, AverageMeter
+from utils.tools import to_numpy
+from utils.visualize import show_image_with_heatmap, show_image_with_landmarks
 
 DEBUG = True
 LOAD_FILE = r"C:\Users\Pavlo\PycharmProjects\GazeLandmarksHourGlass\checkpoints\exp2\model_best.pth"
@@ -38,6 +40,9 @@ def get_model(device):
 def test_unity_eyes():
     DATA_FOLDER = r"C:\Users\Pavlo\PycharmProjects\GazeLandmarksHourGlass\data"
     PRINT_SIZE = 10
+    SAVE_FOLDER = r"sources\unityeyes"
+    if not os.path.isdir(SAVE_FOLDER):
+        os.mkdir(SAVE_FOLDER)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = get_model(device)
@@ -62,6 +67,8 @@ def test_unity_eyes():
     with torch.no_grad():
         for i, (images, heat_maps, meta) in enumerate(test_dataloader):
             # measure data loading time
+            if i == 10:
+                break
             data_time.update(time.time() - end)
 
             images = images.to(device)
@@ -71,15 +78,23 @@ def test_unity_eyes():
             output = model(images)[-1]
             if DEBUG:
                 for image, target_heat_map, predict_heat_map in zip(to_numpy(images), to_numpy(heat_maps),
-                                                                    to_numpy(output)):
-                    show_image_with_heatmap(np.transpose(image, (1, 2, 0)), target_heat_map.sum(0))
-                    show_image_with_heatmap(np.transpose(image, (1, 2, 0)), predict_heat_map.sum(0))
+                        to_numpy(output)):
+                    show_image_with_heatmap(np.transpose(image, (1, 2, 0)), target_heat_map.sum(0),
+                                            save_name=os.path.join(SAVE_FOLDER,
+                                                                   "unityeyes_{}_target_heatmap.jpg".format(i)))
+                    show_image_with_heatmap(np.transpose(image, (1, 2, 0)), predict_heat_map.sum(0),
+                                            save_name=os.path.join(SAVE_FOLDER,
+                                                                   "unityeyes_{}_predict_heatmap.jpg".format(i)))
 
                     target_landmarks = get_landmarks_from_heatmap([target_heat_map])[0] * 2.0
                     predict_landmarks = get_landmarks_from_heatmap([predict_heat_map])[0] * 2.0
 
-                    show_image_with_landmarks(np.transpose(image, (1, 2, 0)), target_landmarks, colors=COLORS)
-                    show_image_with_landmarks(np.transpose(image, (1, 2, 0)), predict_landmarks, colors=COLORS)
+                    show_image_with_landmarks(np.transpose(image, (1, 2, 0)), target_landmarks, colors=COLORS,
+                                              save_name=os.path.join(SAVE_FOLDER,
+                                                                     "unityeyes_{}_target_landmarks.jpg".format(i)))
+                    show_image_with_landmarks(np.transpose(image, (1, 2, 0)), predict_landmarks, colors=COLORS,
+                                              save_name=os.path.join(SAVE_FOLDER,
+                                                                     "unityeyes_{}_predict_landmarks.jpg".format(i)))
 
             acc = landmarks_metrics_eval(to_numpy(output), to_numpy(heat_maps), to_numpy(meta["iris_diameter"]))
 
@@ -139,14 +154,14 @@ def test_images():
         if DEBUG:
             for image, predict_heat_map in zip(to_numpy(images), to_numpy(output)):
                 show_image_with_heatmap(np.transpose(image, (1, 2, 0)), predict_heat_map.sum(0),
-                                        os.path.join(name, "{}_{}_heatmap.jpg".format(name, i)))
+                                        save_name=os.path.join(name, "{}_{}_heatmap.jpg".format(name, i)))
 
                 predict_landmarks = get_landmarks_from_heatmap([predict_heat_map])[0] * 2.0
 
                 show_image_with_landmarks(np.transpose(image, (1, 2, 0)), predict_landmarks, COLORS,
-                                          os.path.join(name, "{}_{}_landmarks.jpg".format(name, i)))
+                                          save_name=os.path.join(name, "{}_{}_landmarks.jpg".format(name, i)))
 
 
 if __name__ == '__main__':
-    # test_unity_eyes()
-    test_images()
+    test_unity_eyes()
+    # test_images()

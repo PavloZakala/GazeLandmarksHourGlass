@@ -6,7 +6,7 @@
 
 Дано картинку на які зображено людське око. Знайти розташування на даній картинці наступний клюх ключових точок:
 
-![Eye with landmarks](https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/image_with_landmarks.png?raw=true)
+<img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/image_with_landmarks.png?raw=true" alt="Eye with landmarks" width = 430px height = 320px>
 
 * 8 точок, що описують краї зрачка (ціанові точки)
 * 7 точок, що описують краї вій (сині точки)

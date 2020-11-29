@@ -11,7 +11,7 @@ from utils import data_augmentation
 from utils import metrics
 
 # DATA_FOLDER = r"/home/pavlo/PycharmProjects/GazeLandmarksHourGlass/data"
-DATA_FOLDER = r"C:\Users\Pavlo\PycharmProjects\GazeLandmarksHourGlass\data"
+DATA_FOLDER = r"data"
 
 def _get_item(idx, dataset, configs:dict):
     image, landmarks = dataset[idx]
@@ -153,7 +153,7 @@ class TestDataset(Dataset):
         return res
 
 class EyeLandmarksDataset(Dataset):
-    PATH = r"/home/pavlo/UnityEyes/imgs"
+    PATH = r"~/UnityEyes/imgs"
     FILE_SIZE = 5000
 
     @staticmethod

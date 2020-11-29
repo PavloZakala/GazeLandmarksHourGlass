@@ -15,7 +15,7 @@ from utils.tools import to_numpy
 from utils.visualize import show_image_with_heatmap, show_image_with_landmarks
 
 DEBUG = True
-LOAD_FILE = r"C:\Users\Pavlo\PycharmProjects\GazeLandmarksHourGlass\checkpoints\exp2\model_best.pth"
+LOAD_FILE = r"checkpoints\exp2\model_best.pth"
 
 COLORS = [(0, 0, 255), (0, 0, 255), (0, 0, 255), (0, 0, 255), (0, 0, 255), (0, 0, 255), (0, 0, 255),
           (0, 255, 255), (0, 255, 255), (0, 255, 255), (0, 255, 255), (0, 255, 255), (0, 255, 255), (0, 255, 255),
@@ -38,7 +38,7 @@ def get_model(device):
 
 
 def test_unity_eyes():
-    DATA_FOLDER = r"C:\Users\Pavlo\PycharmProjects\GazeLandmarksHourGlass\data"
+    DATA_FOLDER = r"data"
     PRINT_SIZE = 10
     SAVE_FOLDER = r"sources\unityeyes"
     if not os.path.isdir(SAVE_FOLDER):
@@ -130,11 +130,11 @@ def test_images():
         os.mkdir(name)
 
     if name == "dirl":
-        image_paths = glob.glob(r"{}\*.png".format(r"C:\Users\Pavlo\Desktop\test_images\dirl"))
+        image_paths = glob.glob(r"{}\*.png".format(r"~\test_images\dirl"))
     elif name == "cave":
-        image_paths = glob.glob(r"{}\*.jpg".format(r"C:\Users\Pavlo\Desktop\test_images\cave"))
+        image_paths = glob.glob(r"{}\*.jpg".format(r"~\test_images\cave"))
     elif name == "mpii":
-        image_paths = glob.glob(r"{}\*.jpg".format(r"C:\Users\Pavlo\Desktop\test_images\mpii"))
+        image_paths = glob.glob(r"{}\*.jpg".format(r"~\test_images\mpii"))
     else:
         raise NotImplemented()
 

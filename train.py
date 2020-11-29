@@ -147,9 +147,8 @@ if __name__ == '__main__':
     BATCH_SIZE = 4
     NUM_WORKERS = 1
     SNAPSHOT = 2
-    # DATA_FOLDER = r"/home/pavlo/PycharmProjects/GazeLandmarksHourGlass/data"
-    DATA_FOLDER = r"C:\Users\Pavlo\PycharmProjects\GazeLandmarksHourGlass\data"
-    CHECKPOINT_PATH = r"C:\Users\Pavlo\PycharmProjects\GazeLandmarksHourGlass\checkpoints\exp1"
+    DATA_FOLDER = r"data"
+    CHECKPOINT_PATH = r"checkpoints\exp1"
 
     LR = 0.005
 

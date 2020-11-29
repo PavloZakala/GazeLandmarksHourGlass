@@ -2,6 +2,3 @@ data
 *__pycache__
 .idea/
 *checkpoints/
-*cave/
-*dirl/
-*mpii/

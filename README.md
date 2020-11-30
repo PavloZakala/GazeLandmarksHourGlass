@@ -62,6 +62,8 @@
 
 Тренування тривало 5 епох, кожна з яких пройшла 1100 бетчів по 16 картинок в одному (batch size). 
 
+<img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/train_valid_plot.png?raw=true" alt="Eye with landmarks" width = 320px height = 240px>
+
 ## 5. Тестування
 
 Тестування проводилось на чоритьох датасетах: 1 штучно згенерований (UnityEyes) та 3 реальних (CAVE, DIRL, MPII)

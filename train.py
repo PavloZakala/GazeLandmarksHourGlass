@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from losses import JointsMSELoss
 from model.hourglass import HourglassNet
 from utils.data_preprocessing import EyeLandmarksDataset, TrainDataset, TestDataset
-from utils.metrics import landmarks_metrics_eval, AverageMeter
+from utils.metrics import heatmap_metrics_eval, AverageMeter
 from utils.optimizer import get_optimizer
 from utils.tools import adjust_learning_rate, save_checkpoint, save_checkpoint_during_time, to_numpy
 
@@ -48,7 +48,7 @@ def train(train_loader, model, criterion, optimizer,
         loss.backward()
         optimizer.step()
 
-        acc = landmarks_metrics_eval(to_numpy(output), to_numpy(heat_maps), to_numpy(meta["iris_diameter"]) / 2.0)
+        acc = heatmap_metrics_eval(to_numpy(output), to_numpy(heat_maps), to_numpy(meta["iris_diameter"]) / 2.0)
 
         # measure accuracy and record loss
         losses.update(loss.item(), images.size(0))
@@ -113,7 +113,7 @@ def validate(val_loader, model, criterion,
                 loss += criterion(o, heat_maps)
             output = output[-1]
 
-            acc = landmarks_metrics_eval(to_numpy(output), to_numpy(heat_maps), to_numpy(meta["iris_diameter"]) / 2.0)
+            acc = heatmap_metrics_eval(to_numpy(output), to_numpy(heat_maps), to_numpy(meta["iris_diameter"]) / 2.0)
 
             # measure accuracy and record loss
             losses.update(loss.item(), images.size(0))

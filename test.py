@@ -1,5 +1,6 @@
 import os
 import time
+import tqdm
 
 import numpy as np
 import torch
@@ -10,11 +11,11 @@ from model.hourglass import HourglassNet
 from utils import data_augmentation
 from utils.data_augmentation import get_landmarks_from_heatmap
 from utils.data_preprocessing import EyeLandmarksDataset, TestDataset
-from utils.metrics import landmarks_metrics_eval, AverageMeter
+from utils.metrics import heatmap_metrics_eval, landmarks_metrics_eval, AverageMeter
 from utils.tools import to_numpy
 from utils.visualize import show_image_with_heatmap, show_image_with_landmarks
 
-DEBUG = True
+DEBUG = False
 LOAD_FILE = r"checkpoints\exp2\model_best.pth"
 
 COLORS = [(0, 0, 255), (0, 0, 255), (0, 0, 255), (0, 0, 255), (0, 0, 255), (0, 0, 255), (0, 0, 255),
@@ -60,14 +61,14 @@ def test_unity_eyes():
     acces = AverageMeter()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model.eval()
+    model.train()
 
     end = time.time()
     bar = Bar('Eval ', max=len(test_dataloader))
     with torch.no_grad():
-        for i, (images, heat_maps, meta) in enumerate(test_dataloader):
+        for i, (images, heat_maps, meta) in tqdm.tqdm(enumerate(test_dataloader)):
             # measure data loading time
-            if i == 10:
+            if i == 100:
                 break
             data_time.update(time.time() - end)
 
@@ -96,7 +97,7 @@ def test_unity_eyes():
                                               save_name=os.path.join(SAVE_FOLDER,
                                                                      "unityeyes_{}_predict_landmarks.jpg".format(i)))
 
-            acc = landmarks_metrics_eval(to_numpy(output), to_numpy(heat_maps), to_numpy(meta["iris_diameter"]))
+            acc = heatmap_metrics_eval(to_numpy(output), to_numpy(heat_maps), to_numpy(meta["iris_diameter"]))
 
             acces.update(acc[0], images.size(0))
 
@@ -119,6 +120,97 @@ def test_unity_eyes():
 
         bar.finish()
 
+    print(acces.avg)
+
+def test_dirl():
+    import glob
+    import cv2
+    import os
+    from matplotlib import pyplot as plt
+    from shapely.geometry import Polygon
+
+    image_paths = glob.glob(r"D:\DIRL\images\*\*\*.png")
+    acces = AverageMeter()
+    IoUs = AverageMeter()
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = get_model(device)
+    print("Data len:", len(image_paths))
+
+    for i, img_path in enumerate(tqdm.tqdm(image_paths)):
+        if i == 100:
+            break
+        names = img_path.split('\\')
+        names[2] = "labels"
+        names[-1] = names[-1][:-3] + "txt"
+        txt_name = '\\'.join(names)
+        img_info = open(txt_name, "r").readlines()
+
+        landmarks = np.array([list(map(int, info[:-1].split(',')[2:])) for info in img_info][7:])
+
+        x_max, y_max = landmarks.max(0)
+        x_min, y_min = landmarks.min(0)
+
+        x_center = (x_min + x_max) / 2.0
+        y_center = (y_min + y_max) / 2.0
+
+        x_d, y_d = x_max - x_min, y_max - y_min
+
+        x_min = int(x_center - x_d * 1.1 / 2.0)
+        x_max = int(x_center + x_d * 1.1 / 2.0)
+        y_min = int(y_center - y_d * 1.4 / 2.0)
+        y_max = int(y_center + y_d * 1.4 / 2.0)
+
+        image = cv2.imread(img_path)
+        image = image[y_min: y_max, x_min: x_max]
+        landmarks -= np.array([[x_min, y_min]])
+
+        data = {"image": image,
+                "landmarks": landmarks}
+
+        data_augmentation.resize(data, size=(128, 96))
+        data_augmentation.data_normalizarion(data)
+
+        images = data["image"].astype(np.float32)
+        images = np.transpose(images, (2, 0, 1))[np.newaxis, :]
+
+        images = torch.from_numpy(images).to(device)
+        output = model(images)[-1]
+        predict_landmarks = get_landmarks_from_heatmap(to_numpy(output))[0] * 2.0
+
+        target_points_landmarks = [p for p in data["landmarks"][:-1]]
+        target_polygon = Polygon(target_points_landmarks)
+
+        predict_points_landmarks = [p for p in predict_landmarks[:7]]
+        predict_polygon = Polygon(predict_points_landmarks)
+
+        IoU = target_polygon.intersection(predict_polygon).area / \
+              target_polygon.union(predict_polygon).area
+
+        IoUs.update(IoU)
+
+        acc, _ = landmarks_metrics_eval(predict_landmarks[-2:-1][np.newaxis, :], data["landmarks"][-1:][np.newaxis, :], np.ones(1) * 30)
+
+        acces.update(acc, 1)
+        if DEBUG:
+            img = data["image"]
+            for p in data["landmarks"][:-1]:
+                img = cv2.circle(img, (int(p[0]), int(p[1])), 1, (0, 0, 255), 2)
+
+            p = data["landmarks"][-1]
+            img = cv2.circle(img, (int(p[0]), int(p[1])), 1, (255, 255, 0), 2)
+
+            for p in predict_landmarks[:7]:
+                img = cv2.circle(img, (int(p[0]), int(p[1])), 1, (0, 255, 0), 2)
+
+            p = predict_landmarks[-2]
+            img = cv2.circle(img, (int(p[0]), int(p[1])), 1, (255, 0, 0), 2)
+            img = img[:, :, ::-1]
+            plt.imshow(img)
+            plt.show()
+
+    print("IoU:", IoUs.avg)
+    print("Acc:", acces.avg)
 
 def test_images():
     import glob
@@ -163,5 +255,6 @@ def test_images():
 
 
 if __name__ == '__main__':
-    test_unity_eyes()
+    # test_unity_eyes()
+    test_dirl()
     # test_images()

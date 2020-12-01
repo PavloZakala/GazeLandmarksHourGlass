@@ -27,7 +27,7 @@ def calc_dists_acc(preds, target, threshhold):
     return np.maximum((threshhold[:, np.newaxis] - dists) / threshhold[:, np.newaxis], 0.0)
 
 
-def landmarks_metrics_eval(pred_heat_map, target_heat_map, threshhold):
+def heatmap_metrics_eval(pred_heat_map, target_heat_map, threshhold):
     pred_landmarks = get_landmarks_from_heatmap(pred_heat_map)
     target_landmarks = get_landmarks_from_heatmap(target_heat_map)
 
@@ -36,6 +36,11 @@ def landmarks_metrics_eval(pred_heat_map, target_heat_map, threshhold):
 
     return dists.mean(0).mean(0), bin_score.astype(np.float).mean()
 
+def landmarks_metrics_eval(pred_landmarks, target_landmarks, threshhold):
+    dists = calc_dists_acc(pred_landmarks, target_landmarks, threshhold=threshhold)
+    bin_score = dists != 0.0
+
+    return dists.mean(0).mean(0), bin_score.astype(np.float).mean()
 
 if __name__ == '__main__':
     target = np.random.randint(0, 36, size=(5, 17, 2))

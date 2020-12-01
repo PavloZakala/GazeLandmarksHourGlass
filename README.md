@@ -123,42 +123,6 @@ Accuracy:
 |---|---|
 | 0.98471  | 0.97636  |
 
-### CAVE
-[source](https://www.cs.columbia.edu/CAVE/databases/columbia_gaze/)
-
-<table>
-  <tr>
-    <td>Передбачена теплова мапа</td>
-    <td>Передбачені ключові точки</td>
-    <td>Передбачена теплова мапа</td>
-    <td>Передбачені ключові точки</td>
-   </tr> 
-   <tr>
-      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_0_heatmap.jpg?raw=true" alt="predict_heatmap" width = 256px height = 144px></td>
-      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_0_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
-      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_1_heatmap.jpg?raw=true" alt="predict_heatmap" width = 256px height = 144px></td>
-      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_1_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
-  </tr>
-     <tr>
-      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_2_heatmap.jpg?raw=true" alt="predict_heatmap" width = 256px height = 144px></td>
-      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_2_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
-      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_3_heatmap.jpg?raw=true" alt="predict_heatmap" width = 256px height = 144px></td>
-      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_3_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
-  </tr>
-     <tr>
-      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_4_heatmap.jpg?raw=true" alt="predict_heatmap" width = 256px height = 144px></td>
-      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_4_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
-      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_5_heatmap.jpg?raw=true" alt="predict_heatmap" width = 256px height = 144px></td>
-      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_5_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
-  </tr>
-     <tr>
-      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_6_heatmap.jpg?raw=true" alt="predict_heatmap" width = 256px height = 144px></td>
-      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_6_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
-      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_8_heatmap.jpg?raw=true" alt="predict_heatmap" width = 256px height = 144px></td>
-      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_8_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
-  </tr>
-</table>
-
 
 ### DIRL
 
@@ -195,6 +159,74 @@ Accuracy:
       <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/dirl/dirl_9_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
   </tr>
 </table>
+
+Test data Example:
+
+Для тестування моделі на датасеті DIRL:
+
+<img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/dirl_points.png?raw=true" alt="Eye with landmarks" width = 320px height = 240px>
+
+
+* 6 червоних точок - цільові краї ока та курункул
+* 7 зелених точок - передбачені точки
+* 1 ціанова точка - цільова точка центру зіниці
+* 1 синя точка - передбачена точка центру зіниці
+
+Метрики:
+
+  IoU:
+
+  <img src="https://render.githubusercontent.com/render/math?math=IoU=MEAN(\frac{INTER(target sclera square, predict sclera square)}{UNION(target sclera square, predict sclera square)})" width = 400px height = 50px>
+
+  Accuracy:
+
+  <img src="https://render.githubusercontent.com/render/math?math=acc=MEAN( (d > (target - predict))\frac{target - predict}{d})" width = 400px height = 50px>
+
+  * target - real point location;
+  * predict - predict position point;
+  * N - size of samples;
+  * d - (radius of iris) / 2.
+
+|  IoU |  Acc Iris center |
+|---|---|
+| 0.98471  | 0.97636  |
+
+### CAVE
+[source](https://www.cs.columbia.edu/CAVE/databases/columbia_gaze/)
+
+<table>
+  <tr>
+    <td>Передбачена теплова мапа</td>
+    <td>Передбачені ключові точки</td>
+    <td>Передбачена теплова мапа</td>
+    <td>Передбачені ключові точки</td>
+   </tr> 
+   <tr>
+      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_0_heatmap.jpg?raw=true" alt="predict_heatmap" width = 256px height = 144px></td>
+      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_0_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
+      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_1_heatmap.jpg?raw=true" alt="predict_heatmap" width = 256px height = 144px></td>
+      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_1_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
+  </tr>
+     <tr>
+      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_2_heatmap.jpg?raw=true" alt="predict_heatmap" width = 256px height = 144px></td>
+      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_2_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
+      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_3_heatmap.jpg?raw=true" alt="predict_heatmap" width = 256px height = 144px></td>
+      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_3_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
+  </tr>
+     <tr>
+      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_4_heatmap.jpg?raw=true" alt="predict_heatmap" width = 256px height = 144px></td>
+      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_4_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
+      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_5_heatmap.jpg?raw=true" alt="predict_heatmap" width = 256px height = 144px></td>
+      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_5_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
+  </tr>
+     <tr>
+      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_6_heatmap.jpg?raw=true" alt="predict_heatmap" width = 256px height = 144px></td>
+      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_6_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
+      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_8_heatmap.jpg?raw=true" alt="predict_heatmap" width = 256px height = 144px></td>
+      <td><img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/cave/cave_8_landmarks.jpg?raw=true" alt="predict_landmarks" width = 256px height = 144px></td>
+  </tr>
+</table>
+
 
 ### MPII
 

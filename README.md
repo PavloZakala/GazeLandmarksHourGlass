@@ -109,7 +109,7 @@
   </tr>
 </table>
 
-Accuracy:
+**Accuracy:**
 
 <img src="https://render.githubusercontent.com/render/math?math=acc=MEAN( (d > (target - predict))\frac{target - predict}{d})" width = 400px height = 50px>
 
@@ -172,13 +172,13 @@ Test data Example:
 * 1 ціанова точка - цільова точка центру зіниці
 * 1 синя точка - передбачена точка центру зіниці
 
-Метрики:
+**Метрики:**
 
-  IoU:
+  __IoU:__
 
   <img src="https://render.githubusercontent.com/render/math?math=IoU=MEAN(\frac{INTER(target sclera square, predict sclera square)}{UNION(target sclera square, predict sclera square)})" width = 400px height = 50px>
 
-  Accuracy:
+  __Accuracy:__
 
   <img src="https://render.githubusercontent.com/render/math?math=acc=MEAN( (d > (target - predict))\frac{target - predict}{d})" width = 400px height = 50px>
 

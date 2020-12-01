@@ -109,6 +109,19 @@
   </tr>
 </table>
 
+Accuracy:
+
+<img src="https://render.githubusercontent.com/render/math?math=acc=MEAN( (d > (target - predict))\frac{target - predict}{d})" width = 400px height = 50px>
+
+* target - real point location;
+* predict - predict position point;
+* N - size of samples;
+* d - (radius of iris) / 2.
+
+
+|  Train Acc |  Test Acc |
+|---|---|
+| 0.98471  | 0.97636  |
 
 ### CAVE
 [source](https://www.cs.columbia.edu/CAVE/databases/columbia_gaze/)

@@ -164,7 +164,7 @@ Test data Example:
 
 Для тестування моделі на датасеті DIRL:
 
-<img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/dirl_points.png?raw=true" alt="Eye with landmarks" width = 320px height = 240px>
+<img src="https://github.com/ZPavlo/GazeLandmarksHourGlass/blob/main/sources/dirl_points.png?raw=true" alt="Eye with landmarks" width = 256px height = 144px>
 
 
 * 6 червоних точок - цільові краї ока та курункул

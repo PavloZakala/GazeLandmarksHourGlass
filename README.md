@@ -189,7 +189,7 @@ Test data Example:
 
 |  IoU |  Acc Iris center |
 |---|---|
-| 0.98471  | 0.97636  |
+| 0.77937  | 0.69949 |
 
 ### CAVE
 [source](https://www.cs.columbia.edu/CAVE/databases/columbia_gaze/)

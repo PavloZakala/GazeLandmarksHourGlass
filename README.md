@@ -109,9 +109,9 @@
   </tr>
 </table>
 
-**Accuracy:**
+**Distance acc:**
 
-<img src="https://render.githubusercontent.com/render/math?math=acc=MEAN( (d > (target - predict))\frac{target - predict}{d})" width = 400px height = 50px>
+<img src="https://render.githubusercontent.com/render/math?math=acc=MEAN( (d > dist(target, predict))(1-\frac{dist(target, predict)}{d}))" width = 400px height = 50px>
 
 * target - real point location;
 * predict - predict position point;
@@ -178,10 +178,10 @@ Test data Example:
 
   <img src="https://render.githubusercontent.com/render/math?math=IoU=MEAN(\frac{INTER(target sclera square, predict sclera square)}{UNION(target sclera square, predict sclera square)})" width = 400px height = 50px>
 
-  __Accuracy:__
+  __Distance acc:__
 
-  <img src="https://render.githubusercontent.com/render/math?math=acc=MEAN( (d > (target - predict))\frac{target - predict}{d})" width = 400px height = 50px>
-
+ <img src="https://render.githubusercontent.com/render/math?math=acc=MEAN( (d > dist(target, predict))(1-\frac{dist(target, predict)}{d}))" width = 400px height = 50px>
+ 
   * target - real point location;
   * predict - predict position point;
   * N - size of samples;
